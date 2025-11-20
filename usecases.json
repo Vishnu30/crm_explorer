@@ -1,0 +1,1461 @@
+[
+  {
+    "id": "qsr",
+    "name": "QSR (Quick Service Restaurants)",
+    "useCases": [
+      {
+        "id": "loyalty",
+        "title": "Loyalty & Rewards Program",
+        "moengage": {
+          "steps": [
+            "Define program objectives and KPIs such as repeat purchase rate, ARPU, and tier retention.",
+            "Create canonical user attributes and events including customer_id, points_balance, loyalty_tier, order_placed, points_adjusted and reward_redeemed with sample payloads.",
+            "Build a backend points engine that calculates points, applies promotions, enforces expiry, and exposes endpoints for updates with idempotency using order_id.",
+            "Integrate MoEngage SDK on web and mobile and push authoritative points updates from backend to MoEngage Users API.",
+            "Design Journeys: tier-up, points-expiry reminders, reward issuance flows; include branching by tier and channel preference.",
+            "Integrate coupon service via REST action in Journeys; insert single-use coupon codes into messages and ensure redemption updates points_balance.",
+            "Set up QA and staging tests to simulate orders, point updates, and redemptions; verify idempotency and message rendering.",
+            "Roll out gradually to a small percentage, monitor errors and business KPIs, and export data to warehouse for LTV analysis."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Define program KPIs and a data spec for Braze attributes and events like points_balance, loyalty_tier, order_placed, and reward_redeemed.",
+            "Implement server-side points engine and update Braze via Users API ensuring idempotency and timestamps.",
+            "Integrate Braze SDK for client-side events while keeping points authoritative on the server.",
+            "Create Canvases for lifecycle flows and use REST Action nodes to request coupon codes and store them as Canvas variables.",
+            "Author templates using Liquid to display dynamic points, tier, and coupon values with safe fallbacks.",
+            "Test Canvases with preview users and staging environments; validate coupon generation and redemption tracking.",
+            "Stream events via Currents to data warehouse for cohort and LTV analysis and run Canvas variants for experimentation."
+          ]
+        }
+      },
+      {
+        "id": "order-abandon",
+        "title": "Order Abandonment Recovery",
+        "moengage": {
+          "steps": [
+            "Instrument cart and checkout events including cart_started, cart_updated, checkout_initiated, cart_abandoned, and order_placed with cart metadata.",
+            "Define abandonment rules and segment high-intent carts based on cart value or item mix.",
+            "Create a Journey sequence with timed reminders and conversion checks to remove converted users between steps.",
+            "Integrate coupon generation via REST action at the appropriate node and merge coupon codes into message templates.",
+            "Apply suppression and frequency capping to avoid over-messaging and respect user channel preferences.",
+            "Ensure order events include coupon_id for attribution and stream data to analytics for recovery ROI measurement.",
+            "Test end-to-end in staging including coupon uniqueness, idempotency, and redemption flow reconciliation with backend."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Emit cart events to Braze and trigger a Canvas when a cart_abandoned event is detected.",
+            "Design Canvas flow with waits, conversion checks, and branches for coupon issuance and VIP escalation.",
+            "Use REST Action to call coupon microservice at send-time and inject coupon via Liquid templating into messages.",
+            "Create templates that render cart item lists using Liquid loops with fallbacks for missing data.",
+            "Use Canvas suppression logic and frequency caps to avoid over-sending and duplicate coupon issuance.",
+            "Stream order and coupon events via Currents for attribution and A/B test Canvas variants for optimal results."
+          ]
+        }
+      },
+      {
+        "id": "post-feedback",
+        "title": "Post-order Feedback & NPS",
+        "moengage": {
+          "steps": [
+            "Emit delivery_completed events and schedule feedback Journeys with an appropriate delay window to maximize response.",
+            "Design a short NPS or feedback survey with minimal fields and deep links to in-app or web surveys.",
+            "Route detractor responses to support via webhook and start a recovery Journey; trigger promoter flows for referrals.",
+            "Record survey responses as user events/attributes for segmentation and future personalization.",
+            "Set up dashboards to track NPS trends, response rates, and remediation SLAs and export comments for ops action."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Schedule a Canvas to send surveys after delivery events and capture responses via POST back as Braze custom events.",
+            "Branch Canvas flows to handle low scores by calling webhooks to ticketing systems and triggering recovery sequences.",
+            "Use Liquid templates and Content Cards for different devices and regions to improve survey rendering and completion.",
+            "Persist NPS attributes for segmentation and stream responses via Currents for deeper analysis including sentiment clustering."
+          ]
+        }
+      },
+      {
+        "id": "personalization",
+        "title": "Menu Personalization & Recommendations",
+        "moengage": {
+          "steps": [
+            "Track behavior signals such as item_viewed, item_added_to_cart and order_history and maintain preference attributes like dietary tags.",
+            "Build or integrate a recommendation service that returns top-N items with metadata and reasons for recommendations.",
+            "Choose integration pattern: push top picks to MoEngage attributes for campaigns or call recs API at render-time via REST action for freshest results.",
+            "Create dynamic templates for email and in-app that render recommended items and fall back to editorial picks on API failure.",
+            "Track rec_click and rec_purchase events and tag recommended_item_id for attribution and model retraining.",
+            "A/B test recommendation algorithms, placement, and creatives and monitor incremental revenue uplift."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Send product interactions and profile attributes to Braze and decide whether to compute recs server-side or call recs API at send-time.",
+            "Use Braze REST Action within Canvas for render-time recs or push attributes with top picks for batch campaigns.",
+            "Author Liquid templates to iterate over recommendations and display images, price and CTA deep-links with safe fallbacks.",
+            "Use Content Cards for persistent in-app recommendations that can be updated frequently.",
+            "Emit rec_click and rec_purchase events and stream via Currents for model evaluation and retraining."
+          ]
+        }
+      },
+      {
+        "id": "winback",
+        "title": "Win-back Lapsed Customers",
+        "moengage": {
+          "steps": [
+            "Define lapsed cohorts and thresholds and prioritize by value using RFM segmentation.",
+            "Design multi-stage Journeys that escalate offers for VIPs and remove users upon conversion at any stage.",
+            "Personalize messaging with last_order_items, favorite_store and tailored incentives; generate single-use coupons as needed.",
+            "Manage suppression lists and frequency caps to avoid contacting unsubscribed or legally suppressed users.",
+            "Measure reactivation rate, cost per reactivation, and long-term LTV uplift for reactivated users using cohort analysis."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Create Braze segments or dynamic cohorts for lapsed users and tag VIPs for special handling.",
+            "Construct Canvas with staged messages and branching on conversion events, including REST Actions for coupon issuance.",
+            "Personalize messages using Liquid to show past purchases and recommended items.",
+            "Test Canvas variants before scaling and stream results via Currents for ROI and incremental lift analysis."
+          ]
+        }
+      },
+      {
+        "id": "geo-offers",
+        "title": "Real-time Geo / Proximity Offers",
+        "moengage": {
+          "steps": [
+            "Obtain explicit location consent from users and provide an easy opt-out as part of privacy controls.",
+            "Configure geofences per outlet in app and emit enter_geofence events with store_id and timestamp.",
+            "Trigger Journeys on geofence entry to send limited-time offers and call coupon-service at send time to generate codes.",
+            "Enforce local and global frequency caps and quiet hours to avoid message fatigue.",
+            "Include store_id in redemption events to reconcile with POS data and measure footfall uplift."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Ingest enter_geofence events through SDK or server-side ingestion and ensure user consent is recorded.",
+            "Create a Canvas triggered by enter_geofence and use REST Action to fetch coupon codes at send-time.",
+            "Personalize the message with nearest outlet details and deep-link back to localized order pages.",
+            "Apply frequency capping and local time checks in Canvas to avoid off-hour messages and over-notifying users.",
+            "Stream geofence events and redemptions via Currents for offline reconciliation and analytics."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "fintech",
+    "name": "Fintech",
+    "useCases": [
+      {
+        "id": "behavioural-nudges",
+        "title": "Behavioural Nudges for Saving",
+        "moengage": {
+          "steps": [
+            "Record explicit consent for financial messaging and store consent attributes for compliance.",
+            "Instrument events such as payday_detected, salary_in, deposit_made and attributes like monthly_income_estimate.",
+            "Create segments for payday and likely savers based on recent inflows and balances.",
+            "Build Journeys that educate about micro-saving and include deep-links to secure opt-in flows which are validated server-side.",
+            "Track opt-in and deposit events to measure sustained savings and adjust messaging cadence accordingly."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Store consent as a Braze attribute and only target consenting users for financial nudges.",
+            "Emit payday and deposit events and use Canvas to orchestrate multi-touch nudges around paydays.",
+            "Use secure deep-links to direct users to in-app flows that perform server-side verification before enabling auto-save.",
+            "Stream deposit and opt-in events via Currents for compliance reporting and product analytics."
+          ]
+        }
+      },
+      {
+        "id": "fraud-alerts",
+        "title": "Fraud & Risk Alerts",
+        "moengage": {
+          "steps": [
+            "Define fraud signals and severity levels for events like new_device_login, large_transfer and geo_mismatch.",
+            "For high-severity events use immediate channels such as SMS and high-priority push and include actionable instructions.",
+            "Provide in-app blocking screens for critical confirmations and require extra authentication when appropriate.",
+            "Trigger webhooks to fraud operations systems for investigation and capture user confirmation events to feed model tuning."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Send suspicious_activity events with detailed metadata to Braze and mark severity.",
+            "Create high-priority Canvas flows that send SMS and push and call webhooks to fraud ops for immediate action.",
+            "Provide secure in-app verification links and require additional authentication when needed; export events for audit and model training via Currents."
+          ]
+        }
+      },
+      {
+        "id": "kyc-onboarding",
+        "title": "KYC-friendly Onboarding",
+        "moengage": {
+          "steps": [
+            "Split KYC into micro-steps such as email_verified, phone_verified, id_uploaded and selfie_uploaded and track each milestone.",
+            "Persist progress server-side and surface onboarding_progress attribute in MoEngage for personalization of reminders.",
+            "Trigger Journeys to nudge users who stall at specific steps and provide help resources or schedule agent-assisted calls via webhooks."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Emit onboarding milestone events and update onboarding_progress attribute in Braze for segmentation.",
+            "Build Canvas flows to nudge stallers with contextual help and include a schedule-callback webhook node for human assist.",
+            "Stream onboarding events via Currents to maintain immutable logs for compliance and auditing needs."
+          ]
+        }
+      },
+      {
+        "id": "credit-offers",
+        "title": "Personalised Credit Offers",
+        "moengage": {
+          "steps": [
+            "Compute eligibility and risk server-side and only push non-sensitive offer metadata such as offer_id to MoEngage.",
+            "Segment pre-approved audiences and orchestrate Journeys that invite users to view offers via secure deep-links with one-time tokens.",
+            "Validate tokens server-side prior to showing sensitive pricing and log acceptance events for compliance and analytics."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Store minimal offer identifiers in Braze and use Canvas to target pre-approved users with personalized messaging.",
+            "Use REST Actions and secure one-time tokens in deep links to drive users to server-verified offer pages.",
+            "Stream acceptance and performance events via Currents to analytics for risk monitoring and offer optimization."
+          ]
+        }
+      },
+      {
+        "id": "first-transaction",
+        "title": "Product Activation (First Transaction)",
+        "moengage": {
+          "steps": [
+            "Define the activation event such as first_transaction and instrument intermediate funnel events to measure friction points.",
+            "Create activation Journeys with micro-guides, friction-reducing tips and small incentives to encourage first usage.",
+            "Use in-app messages to pre-fill known fields and provide one-click payment to reduce friction and emit first_transaction on completion."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Emit funnel events and first_transaction event to Braze and segment users accordingly.",
+            "Build a Canvas to orchestrate activation messages and branch based on user progress to minimize redundant messaging.",
+            "Export activation cohorts via Currents for product analytics and experimentation."
+          ]
+        }
+      },
+      {
+        "id": "feature-education",
+        "title": "Feature Education & Adoption",
+        "moengage": {
+          "steps": [
+            "Design bite-sized educational modules that map to measurable adoption events.",
+            "Create drip Journeys to send lessons with waits and skip logic that checks for feature_used events to avoid redundancy.",
+            "Incentivize completion with badges or small rewards and track adoption impact in cohorts."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Orchestrate education series using Canvas with Content Cards for persistent lesson access.",
+            "Gate subsequent lessons based on lesson_completed events and stream progress data via Currents for product insights."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "edtech",
+    "name": "Edtech",
+    "useCases": [
+      {
+        "id": "course-recs",
+        "title": "Personalised Course Recommendations",
+        "moengage": {
+          "steps": [
+            "Capture learner profile attributes and events such as skills, interests and module_completed.",
+            "Build a recommendation API that returns ranked course suggestions along with reasons and confidence.",
+            "Integrate recs either by pushing top-N into MoEngage attributes for campaigns or calling the API at render-time via REST Action.",
+            "Design templates and Content Cards to display recommended courses with deep-links to enroll and measure rec_click -> enroll -> complete."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Send learner events and profile attributes to Braze for segmentation.",
+            "Use Braze REST Action or server-side render to fetch recommendations at send-time and inject results using Liquid templates.",
+            "Surface recommendations through Content Cards for persistent in-app exposure and stream interaction events via Currents."
+          ]
+        }
+      },
+      {
+        "id": "first-lesson",
+        "title": "First Lesson Activation",
+        "moengage": {
+          "steps": [
+            "Identify users who signed up but have not started first lesson and create a targeted segment.",
+            "Run an activation Journey that delivers a micro-lesson or deep-link to first lesson along with supportive tips.",
+            "Offer small incentives or gamified badges on completion and measure effect on retention."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Use Canvas to sequence welcome -> micro-lesson -> reminder messages with branching on lesson_started events.",
+            "Display persistent CTA using Content Cards until learners complete the first lesson."
+          ]
+        }
+      },
+      {
+        "id": "certificate",
+        "title": "Certificate & Credentialing Notifications",
+        "moengage": {
+          "steps": [
+            "Emit certificate_awarded events with metadata and trigger congratulatory Journeys.",
+            "Include social share CTAs and pre-filled copy to encourage referrals and public testimonials.",
+            "Track share and referral conversions to measure the impact of certificates on new enrollments."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Create Canvas for certificate issuance that sends email/push and Content Card with share options.",
+            "Capture share_event and referral_event and stream them via Currents for marketing attribution."
+          ]
+        }
+      },
+      {
+        "id": "reengage",
+        "title": "Re-engagement for Dormant Learners",
+        "moengage": {
+          "steps": [
+            "Define inactivity windows and create priority segments for high-value learners.",
+            "Design re-engagement Journeys with teaser content, micro-lessons and coach booking CTAs for premium learners.",
+            "Escalate to human outreach via webhook for VIPs and capture reactivation metrics to optimize flows."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Use Canvas to orchestrate re-engagement flows with conditional branches and escalation nodes for VIP outreach.",
+            "Personalize messages with Liquid using learner progress data and measure reactivation through Currents exports."
+          ]
+        }
+      },
+      {
+        "id": "feedback",
+        "title": "Instructor & Course Feedback Loop",
+        "moengage": {
+          "steps": [
+            "Trigger brief surveys after module completion and collect structured responses with optional comments.",
+            "Route negative feedback to support via webhooks and start recovery Journeys while inviting promoters for testimonials.",
+            "Aggregate free-text responses and export for analysis to inform course improvements."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Schedule survey Canvas after module completion and capture responses via webhooks as Braze events.",
+            "Use branching to route negative responses to ops and positive ones to marketing for testimonials."
+          ]
+        }
+      },
+      {
+        "id": "referrals",
+        "title": "Student Referral Program",
+        "moengage": {
+          "steps": [
+            "Design referral mechanics including unique codes or referral links and define reward rules and expirations.",
+            "Trigger referral prompts at milestones and track invite_event and referral_conversion events.",
+            "On successful referrals call reward engine via REST action and notify both referrer and referee via Journey."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Use Canvas to prompt referrals at key milestones and record invite events in Braze.",
+            "Invoke reward services via REST Action upon successful conversion and stream referral metrics via Currents."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "ecom",
+    "name": "Ecommerce",
+    "useCases": [
+      {
+        "id": "cart-abandon",
+        "title": "Cart Abandonment Recovery",
+        "moengage": {
+          "steps": [
+            "Emit item_viewed, item_added_to_cart, cart_updated and checkout_started events with cart_id and items.",
+            "Detect abandonment based on timeout rules and flag high-intent carts for escalations.",
+            "Design Journey with push reminder, email with coupon, and SMS escalation for VIPs including conversion checks between steps.",
+            "Integrate coupon-service via REST action, inject coupon into messages and ensure coupon_id is passed into order_placed for attribution.",
+            "A/B test coupon vs reminder-only strategies and optimize based on recovery ROI."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Send cart and checkout events to Braze and trigger Canvas on cart_abandon.",
+            "Use REST Action in Canvas to obtain coupon codes at send time and merge via Liquid templates.",
+            "Validate Liquid templates with test users and stream coupon and order events via Currents for attribution."
+          ]
+        }
+      },
+      {
+        "id": "browse-retarget",
+        "title": "Browse Retargeting & Product Feed",
+        "moengage": {
+          "steps": [
+            "Track product_view events with product metadata and build view-not-purchase segments.",
+            "Use Journeys or REST calls at send-time to populate product feed emails and in-app cards.",
+            "Measure reclicks to purchase and iterate on feed algorithms and creative."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Capture product_view events and create segments in Braze for retargeting.",
+            "Render personalized product tiles with Liquid and REST Actions and use Content Cards for persistent feeds.",
+            "Stream engagement and conversion events via Currents for product analytics."
+          ]
+        }
+      },
+      {
+        "id": "post-purchase",
+        "title": "Post-purchase Nurture & Cross-sell",
+        "moengage": {
+          "steps": [
+            "Trigger confirmation Journey on order_placed and schedule cross-sell sequences timed to product lifecycle.",
+            "Personalize cross-sell recommendations using order metadata and user preferences.",
+            "Track cross-sell conversion and incremental revenue to optimize offers."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Create Canvas triggered by order_placed to sequence confirmation and cross-sell messages.",
+            "Use Liquid to personalize messages and stream conversion events via Currents for revenue attribution."
+          ]
+        }
+      },
+      {
+        "id": "loyalty-ecom",
+        "title": "Membership & Tiered Benefits",
+        "moengage": {
+          "steps": [
+            "Define membership rules, perks and measurement plan and maintain member attributes in backend and MoEngage.",
+            "Build Journeys for member onboarding, exclusive offers and renewal reminders and trigger tier-up flows on thresholds.",
+            "Monitor membership retention and LTV uplift by tier using cohort analysis."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Use Braze attributes for membership flags and orchestrate member lifecycle with Canvas.",
+            "Stream membership events to Currents for LTV analysis and operational reconciliation."
+          ]
+        }
+      },
+      {
+        "id": "reviews",
+        "title": "Review & UGC Capture",
+        "moengage": {
+          "steps": [
+            "Send review requests after confirmed delivery and include simple rating actions with optional comments and photo upload.",
+            "Route negative reviews to support via webhook and incentivize positive reviews responsibly where legal.",
+            "Export UGC to marketing systems and measure conversion uplift from UGC-driven creative."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Schedule review request Canvas and capture responses via webhooks creating Braze events.",
+            "Route negative responders to ops and positive ones to marketing; stream results to Currents for analysis."
+          ]
+        }
+      },
+      {
+        "id": "winback-ecom",
+        "title": "Win-back High-Value Customers",
+        "moengage": {
+          "steps": [
+            "Identify churned high-value customers using RFM analysis and create dedicated segments.",
+            "Design VIP win-back Journeys with premium offers and concierge options and escalate to phone outreach if needed.",
+            "Measure reactivation lift and optimize offer sizing to maximize net LTV."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Create Canvas for VIP win-back with staging and escalation logic and test thoroughly in staging.",
+            "Stream conversions and long-term LTV metrics via Currents for model retraining and budgeting."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "egaming",
+    "name": "EGaming",
+    "useCases": [
+      {
+        "id": "onboarding-eg",
+        "title": "First Session Activation",
+        "moengage": {
+          "steps": [
+            "Instrument tutorial_started, tutorial_completed and first_match_played events and map retention KPIs.",
+            "Reward tutorial completion with in-game currency and announce with push plus in-app instructions on how to spend rewards.",
+            "Measure tutorial completion to short-term retention conversion and iterate on tutorial content and reward sizing."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Use Canvas to orchestrate onboarding rewards and Content Cards for persistent guidance.",
+            "Track event-driven progress and export engagement via Currents for product improvements."
+          ]
+        }
+      },
+      {
+        "id": "reengage-eg",
+        "title": "Re-engagement for Lapsed Players",
+        "moengage": {
+          "steps": [
+            "Segment players by last_played and spend level and identify high-potential reactivation targets.",
+            "Send personalized offers like free entry to tournaments or bundles and escalate to VIP managers for top spenders.",
+            "Monitor post-return monetization and retention to evaluate campaign ROI."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Build Canvas flows targeting lapsed players with tournament invites and timed offers.",
+            "Stream outcomes via Currents to refine re-engagement strategies and offers."
+          ]
+        }
+      },
+      {
+        "id": "push-sensitivity",
+        "title": "Real-time Match & Event Alerts",
+        "moengage": {
+          "steps": [
+            "Emit real-time events for match_start, friend_online and tournament_reminder and tag urgency.",
+            "Send high-priority push notifications with deep-links to join games and enforce per-user caps to avoid fatigue.",
+            "Measure join rates and adjust timing and capping rules to balance engagement and retention."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Use Braze triggered campaigns for match events and Content Cards for recaps and leaderboards.",
+            "Apply Canvas-level capping and measure engagement via Currents for tuning."
+          ]
+        }
+      },
+      {
+        "id": "monetisation",
+        "title": "In-app Purchase Funnel Optimisation",
+        "moengage": {
+          "steps": [
+            "Instrument purchase_initiated, purchase_abandoned and purchase_completed events with item metadata.",
+            "Create Journeys that nudge purchase_abandoned users with limited-time bundles and scarcity messaging.",
+            "Analyze conversion lift and ARPPU changes by cohort after interventions and optimize bundle design."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Use Canvas to target high-intent buyers with tailored bundles and test scarcity messaging.",
+            "Stream purchase funnel events via Currents for pricing and product optimization."
+          ]
+        }
+      },
+      {
+        "id": "tournaments",
+        "title": "Tournament Notification & Leaderboard",
+        "moengage": {
+          "steps": [
+            "Emit tournament_created, tournament_joined and leaderboard_update events and use them to trigger invites and updates.",
+            "Use Content Cards for persistent tournament entry points and push for live highlights during events.",
+            "Track participation and retention lift driven by tournaments to inform future scheduling and prizes."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Orchestrate tournament invites and reminders with Canvas and persist leaderboards via Content Cards.",
+            "Stream participation events via Currents to enable analytics and real-time UIs."
+          ]
+        }
+      },
+      {
+        "id": "churn-pred",
+        "title": "Churn Prediction & Prevention",
+        "moengage": {
+          "steps": [
+            "Collect predictive features like session_frequency, spend, friend_count and recent support issues.",
+            "Score players with an offline model and push risk_score attribute to MoEngage for segmentation.",
+            "Target at-risk players with rescue Journeys and escalate high-risk users to VIP outreach where warranted."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Push risk_score to Braze and create dynamic segments to target players based on risk bands.",
+            "Use Canvas rescue flows with branching and stream results via Currents to improve model performance."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "healthcare",
+    "name": "Healthcare & Wellness",
+    "useCases": [
+      {
+        "id": "appointment-reminders",
+        "title": "Appointment Reminders & Reduce No-shows",
+        "moengage": {
+          "steps": [
+            "Capture explicit consent for appointment reminders and record preferred channel and opt-out timestamp.",
+            "Emit schedule_appointment and appointment_reminder events and design a Journey with multiple reminder intervals and confirm/cancel actions.",
+            "Support two-way confirmations via SMS reply or in-app clicks that update backend scheduling and trigger notifications to staff for rescheduling."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Use Canvas to schedule reminder sequences triggered by appointment events and include secure deep-links for confirmation.",
+            "Stream confirmations and reminders via Currents for auditing and operational reporting."
+          ]
+        }
+      },
+      {
+        "id": "medication-adherence",
+        "title": "Medication Adherence Nudges",
+        "moengage": {
+          "steps": [
+            "Track prescription issuance, dose schedules and med_taken or med_missed events with user consent.",
+            "Create Journeys that send reminders at scheduled dose times and escalate missed doses to caregiver notifications when consented.",
+            "Monitor adherence metrics and export aggregated data for program evaluation while ensuring PHI protection."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Build recurring Canvas flows for medication reminders and missed-dose recovery that include Content Cards for quick confirmation.",
+            "Stream adherence events via Currents for clinical program analysis and continuous improvement."
+          ]
+        }
+      },
+      {
+        "id": "wellness-programs",
+        "title": "Wellness Program Engagement",
+        "moengage": {
+          "steps": [
+            "Create onboarding drips that orient users to program benefits and next steps.",
+            "Implement challenge-based Journeys that track progress, send nudges and issue rewards on milestone completion.",
+            "Measure participation, completion and health outcome proxies where permitted and refine program components."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Orchestrate program drips with Canvas and use Content Cards to show progress and badges.",
+            "Export participation metrics to Currents for program ROI and health outcome analysis."
+          ]
+        }
+      },
+      {
+        "id": "telehealth",
+        "title": "Telehealth Visit Conversion & Reminders",
+        "moengage": {
+          "steps": [
+            "Trigger confirmation and preparation Journeys on telehealth booking events and include a test link reminder before the session.",
+            "Provide secure deep-links to join visits and avoid including clinical details in messages.",
+            "Send post-visit satisfaction surveys and route negative feedback to care teams for follow-up."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Use Canvas for pre-visit reminders and technical checks and schedule post-visit surveys.",
+            "Stream attendance and feedback via Currents to evaluate and reduce no-shows and technical issues."
+          ]
+        }
+      },
+      {
+        "id": "wellness-churn",
+        "title": "Program Retention & Reactivation",
+        "moengage": {
+          "steps": [
+            "Identify participants at risk of churn and create targeted reactivation Journeys offering tailored resources or coach calls.",
+            "Use engagement signals to personalize reactivation messaging and escalate high-value participants to human outreach.",
+            "Measure reactivation rates and downstream health engagement outcomes."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Create Canvas for retention and reactivation that personalizes messaging and invokes webhooks for human follow-up when needed.",
+            "Export reactivation metrics via Currents to correlate with long-term program success."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "travel",
+    "name": "Travel & Hospitality",
+    "useCases": [
+      {
+        "id": "booking-confirm",
+        "title": "Booking Confirmations & Pre-trip Reminders",
+        "moengage": {
+          "steps": [
+            "Emit booking_confirmed events with itinerary and guest contact details.",
+            "Design Journeys for immediate confirmation and timed pre-trip reminders including check-in instructions and local tips.",
+            "Integrate flight/hotel feeds to trigger real-time alerts for schedule or gate changes and push updates."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Orchestrate confirmation and pre-trip reminders with Canvas and call REST Actions to fetch live itinerary updates.",
+            "Test flight or reservation changes to ensure alerts and deep-links function correctly."
+          ]
+        }
+      },
+      {
+        "id": "upsell",
+        "title": "Ancillary Upsell (Upgrades, Add-ons)",
+        "moengage": {
+          "steps": [
+            "Target customers post-booking with relevant ancillaries based on fare class and past behavior.",
+            "Use Journeys with dynamic content to show upgrade offers and one-click acceptance flows.",
+            "Measure attach rate and incremental revenue to optimize timing and creative."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Use Canvas to present tailored ancillaries with REST Actions for dynamic pricing and accept flows.",
+            "Stream conversion events via Currents for revenue reconciliation."
+          ]
+        }
+      },
+      {
+        "id": "realtime-alerts",
+        "title": "Real-time Flight/Itinerary Alerts",
+        "moengage": {
+          "steps": [
+            "Integrate real-time flight APIs and emit flight_status_change events with relevant metadata.",
+            "Trigger immediate high-priority push and SMS alerts for critical changes with instructions and rebooking options.",
+            "Log events and user actions for post-incident analysis and compensation decisions."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Create triggered campaigns for flight status changes and orchestrate complex rebooking flows via Canvas and REST Actions.",
+            "Stream events to Currents for incident analysis and customer recovery metrics."
+          ]
+        }
+      },
+      {
+        "id": "post-trip",
+        "title": "Post-trip Feedback & Loyalty",
+        "moengage": {
+          "steps": [
+            "Send short post-trip surveys and invite travelers to join loyalty programs with incentives.",
+            "Issue loyalty points or credits upon sign-up and measure subsequent booking uplift.",
+            "Aggregate feedback to improve service and identify high-potential loyalty candidates."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Use Canvas to send post-trip surveys and loyalty invitations and capture responses as Braze events.",
+            "Stream sign-ups and booking uplift via Currents for marketing attribution."
+          ]
+        }
+      },
+      {
+        "id": "recovery",
+        "title": "Disruption Recovery & Customer Support",
+        "moengage": {
+          "steps": [
+            "Detect disruptions from partner APIs and trigger emergency Journeys to inform affected customers with next steps.",
+            "Provide prioritized support links, rebooking options and call-to-action to reach live agents where needed.",
+            "Measure recovery time and customer satisfaction to iterate on response playbooks."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Trigger high-priority Canvas for disruptions to orchestrate messages and integrate with support systems via webhooks.",
+            "Collect response metrics and stream via Currents for operational improvements and SLA tracking."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "saas",
+    "name": "SaaS / B2B",
+    "useCases": [
+      {
+        "id": "onboarding",
+        "title": "User Onboarding & Feature Adoption",
+        "moengage": {
+          "steps": [
+            "Define activation metrics such as first_project_created, first_team_invite and key feature usage.",
+            "Create onboarding Journeys with product tours, in-app tips and contextual help that skip completed steps.",
+            "Track activation cohorts and iterate on content and sequencing to improve activation rates."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Use Canvas to orchestrate onboarding flows with Content Cards for persistent tips and Liquid for personalization.",
+            "Export activation events via Currents for product analytics and experiment evaluation."
+          ]
+        }
+      },
+      {
+        "id": "trial-to-paid",
+        "title": "Trial-to-Paid Conversion",
+        "moengage": {
+          "steps": [
+            "Instrument trial_start, trial_usage and trial_expiry events and segment users by usage thresholds.",
+            "Run Journeys that deliver educational content to low usage users and commercial offers to high usage users before expiry.",
+            "Measure conversion rates by cohort and test offers and timing for optimal conversion."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Implement Canvas flows that tailor messages based on usage and include one-click upgrade deep-links.",
+            "Stream trial conversion data via Currents to enable sales follow-up and revenue analysis."
+          ]
+        }
+      },
+      {
+        "id": "account-expansion",
+        "title": "Account Expansion & Cross-sell",
+        "moengage": {
+          "steps": [
+            "Detect expansion signals like seat usage and feature adoption and create accounts_in_play segments.",
+            "Coordinate Journeys with sales handoff webhooks to surface case studies and invite to demos for interested accounts.",
+            "Measure expansion revenue and attribute uplift to specific campaigns and content."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Use Canvas to nurture expansion leads, include webhooks to CRM when an account shows buying intent.",
+            "Stream engagement and conversion events via Currents for territory planning and attribution."
+          ]
+        }
+      },
+      {
+        "id": "renewals",
+        "title": "Subscription Renewals & Retention",
+        "moengage": {
+          "steps": [
+            "Track subscription_renewal_due events and design reminder Journeys with self-serve renewal or retention offers.",
+            "Escalate high-value renewals to account managers via webhooks and monitor SLA compliance.",
+            "Measure renewal rates and reasons for churn to improve product and pricing."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Build Canvas for renewal reminders with wait nodes and escalation for large accounts and stream renewal events to Currents.",
+            "Coordinate renewal campaigns with sales and customer success teams through webhook integrations."
+          ]
+        }
+      },
+      {
+        "id": "support-escalation",
+        "title": "Support Escalation & SLA Notifications",
+        "moengage": {
+          "steps": [
+            "Emit support_ticket_created, ticket_escalated and ticket_resolved events and track SLA timers as attributes.",
+            "Create Journeys to notify customers of ticket progress and trigger urgency alerts to ops when SLAs are breached.",
+            "Gather post-resolution satisfaction and feed results back to improve support processes."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Use Canvas to orchestrate ticket status notifications and webhooks to notify internal teams on SLA breaches.",
+            "Stream ticket timeline and satisfaction data via Currents for ops improvement."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "realestate",
+    "name": "Real Estate",
+    "useCases": [
+      {
+        "id": "lead-gen",
+        "title": "Lead Generation & Nurturing",
+        "moengage": {
+          "steps": [
+            "Capture lead events with property_id, search_criteria and contact details and tag source attribution.",
+            "Segment leads by intent and value (e.g., inquiry frequency, property price) and create nurturing Journeys.",
+            "Use dynamic templates to showcase matching properties and schedule follow-ups; integrate webhooks to CRM for agent assignment."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Emit lead events to Braze and create segments for intent and property preferences.",
+            "Use Canvas to nurture leads with property matches and schedule sales handoffs via webhooks to CRM.",
+            "Stream lead conversion and engagement events via Currents for marketing ROI analysis."
+          ]
+        }
+      },
+      {
+        "id": "viewing-reminders",
+        "title": "Viewing Scheduling & Reminders",
+        "moengage": {
+          "steps": [
+            "Record viewing_booked events with datetime and attendee details and schedule reminder Journeys prior to viewing.",
+            "Include location details, agent contact and map deep-links in messages and support rescheduling via webhooks.",
+            "Track attendance and no-shows to improve scheduling and agent follow-up."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Use Canvas to send viewing confirmations and reminders and integrate with calendar invites via REST Actions.",
+            "Stream attendance data to Currents for operational reporting and agent performance metrics."
+          ]
+        }
+      },
+      {
+        "id": "price-alerts",
+        "title": "Price Changes & Saved Search Alerts",
+        "moengage": {
+          "steps": [
+            "Allow users to save searches and emit price_change events for matched properties.",
+            "Trigger Journeys to notify users of relevant price drops or new listings matching their preferences.",
+            "Track engagement and conversion to viewing or inquiry and refine alert thresholds to avoid noise."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Push price_change and new_listing events into Braze and trigger Canvas notifications for saved search matches.",
+            "Use Liquid to personalize messages with property snippets and stream engagement via Currents."
+          ]
+        }
+      },
+      {
+        "id": "contract-process",
+        "title": "Contract & Transaction Updates",
+        "moengage": {
+          "steps": [
+            "Emit critical transaction events such as offer_submitted, offer_accepted, inspection_passed and closing_scheduled.",
+            "Send transactional updates via Journeys and include secure deep-links to document portals; log confirmations.",
+            "Provide status dashboards and export events for legal and compliance records."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Use Canvas to send contractual and transaction milestone notifications and include secure document links.",
+            "Stream transaction events to Currents for audit trails and post-closing analytics."
+          ]
+        }
+      },
+      {
+        "id": "reengagement",
+        "title": "Re-engagement of Dormant Buyers",
+        "moengage": {
+          "steps": [
+            "Identify dormant buyers by last_interaction date and value and create prioritized re-engagement segments.",
+            "Send tailored property suggestions and agent-led outreach options and measure click-to-view conversion.",
+            "Escalate high-value leads to agents via webhook for personalized follow-up."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Use Canvas to re-engage dormant buyers with personalized property lists and schedule agent callbacks via webhooks.",
+            "Track re-engagement success and downstream conversion via Currents."
+          ]
+        }
+      },
+      {
+        "id": "referrals-realestate",
+        "title": "Referral Program for Agents & Clients",
+        "moengage": {
+          "steps": [
+            "Design referral incentives for clients and agents, generate unique referral links and track invite events.",
+            "Trigger Journeys to prompt referrals after successful closings and track referral conversions.",
+            "Issue rewards via REST action and reconcile rewards with CRM for commission tracking."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Send referral invite events to Braze and create Canvas to manage referral prompts and follow-ups.",
+            "Call reward services via REST Action on conversion and stream referral data for attribution."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "ott",
+    "name": "OTT (Streaming & Media)",
+    "useCases": [
+      {
+        "id": "onboarding-ott",
+        "title": "New Subscriber Onboarding",
+        "moengage": {
+          "steps": [
+            "Track signup and profile_setup events and segment users by content preferences.",
+            "Create onboarding Journeys that suggest starter content, explain features and encourage first watch.",
+            "Use personalization to recommend content and track first_watch metrics for activation."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Emit signup and preference events to Braze and use Canvas to send onboarding sequences.",
+            "Use Content Cards to persistently surface recommended titles and stream watch events via Currents."
+          ]
+        }
+      },
+      {
+        "id": "churn-pred-ott",
+        "title": "Churn Prediction & Retention",
+        "moengage": {
+          "steps": [
+            "Collect engagement signals such as session_length, recency, frequency and content completion rates.",
+            "Score churn risk offline and push risk_score attribute to MoEngage for segmentation.",
+            "Target at-risk users with retention Journeys offering personal recommendations, special offers or account reviews."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Push churn risk attributes to Braze and use Canvas to orchestrate rescue flows with offers and personalization.",
+            "Stream results via Currents to evaluate effectiveness and refine models."
+          ]
+        }
+      },
+      {
+        "id": "content-release",
+        "title": "New Content Release & Premieres",
+        "moengage": {
+          "steps": [
+            "Emit content_release events with metadata and schedule launch campaigns across channels.",
+            "Create Journeys for early access, premiere reminders and post-premiere follow-ups with behind-the-scenes content.",
+            "Measure viewership, drop-off rates and conversion to paid tiers if applicable."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Use Canvas to coordinate release campaigns and REST Actions to fetch dynamic promo assets at send-time.",
+            "Track premiere engagement via Currents and attribute marketing impact to subscriptions or upsells."
+          ]
+        }
+      },
+      {
+        "id": "recommendations-ott",
+        "title": "Personalised Recommendations & Next-up",
+        "moengage": {
+          "steps": [
+            "Instrument watch events, likes and skips to power recommendation logic and compute next-up suggestions.",
+            "Push top recommendations to user attributes or call recs API at render-time and use Journeys to surface suggestions.",
+            "Measure recommendation CTR to play rate and iterate on algorithms."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Send viewing behavior to Braze and use REST Actions in Canvas to fetch real-time recommendations.",
+            "Use Liquid templating to display recommended titles and track clicks and play events via Currents."
+          ]
+        }
+      },
+      {
+        "id": "subscription-upsell",
+        "title": "Subscription Upgrade & Upsell",
+        "moengage": {
+          "steps": [
+            "Identify heavy viewers and segment potential upgrade candidates by watch time and content affinity.",
+            "Trigger Journeys with targeted upgrade offers and trials that highlight premium content benefits.",
+            "Measure upgrade conversion and incremental revenue and iterate on offer presentation and timing."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Create Canvas to target upgrade candidates with dynamic pricing via REST Action and measure through Currents.",
+            "A/B test different trial lengths and messaging variants to optimize conversions."
+          ]
+        }
+      },
+      {
+        "id": "push-notifs",
+        "title": "Real-time Push Notifications for Live Events",
+        "moengage": {
+          "steps": [
+            "Emit live_event_start events and tag urgency for sports or live streams.",
+            "Send high-priority push notifications with deep-links to live streams and enforce frequency caps to avoid fatigue.",
+            "Monitor join rates and tune timing to maximize live attendance."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Use triggered campaigns to send real-time live event alerts and use Content Cards for post-event recaps.",
+            "Stream engagement to Currents for optimization and analysis."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "insurance",
+    "name": "Insurance",
+    "useCases": [
+      {
+        "id": "quote-flow",
+        "title": "Quote & Application Flow",
+        "moengage": {
+          "steps": [
+            "Instrument quote_started, quote_submitted and application_status events and keep users informed during the process.",
+            "Build Journeys that nudge incomplete applications with contextual help and clear CTAs to resume.",
+            "Integrate webhook notifications with underwriting systems to update status and notify users of decisions."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Use Canvas to orchestrate application follow-ups and include REST Actions to fetch underwriting status at send-time.",
+            "Stream application events via Currents for operational monitoring and compliance."
+          ]
+        }
+      },
+      {
+        "id": "claims",
+        "title": "Claims Filing & Status Updates",
+        "moengage": {
+          "steps": [
+            "Emit claim_filed, claim_received and claim_status_update events and design Journeys to send timely status updates.",
+            "Provide secure deep-links to claim portals and schedule reminders for documentation uploads.",
+            "Route escalations to claims agents when certain thresholds or delays occur."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Use Canvas to keep claimants updated and use webhooks to notify internal claims systems of urgent escalations.",
+            "Stream claim timelines and user acknowledgements via Currents for audit and improvement."
+          ]
+        }
+      },
+      {
+        "id": "renewals-insurance",
+        "title": "Policy Renewals & Reminders",
+        "moengage": {
+          "steps": [
+            "Track policy_renewal_due events and send a sequence of reminders with self-serve renewal options and relevant discounts.",
+            "Escalate high-value renewals to agents and monitor renewal rates alongside reasons for non-renewal."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Canvas orchestration for renewal reminders with escalation nodes to notify agents for complex cases.",
+            "Export renewal outcomes to Currents for financial planning and retention analysis."
+          ]
+        }
+      },
+      {
+        "id": "fraud-detection",
+        "title": "Insurance Fraud Detection Notifications",
+        "moengage": {
+          "steps": [
+            "Define suspicious claim signals and severity levels and trigger immediate alerts to internal fraud teams.",
+            "Notify claimants of receipt and next steps while investigations are ongoing, avoiding disclosure of sensitive details.",
+            "Log all communications and investigation outcomes for auditability."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Ingest suspicious claim events and orchestrate high-priority alerts to internal teams via Canvas.",
+            "Stream investigative timelines and communications via Currents for compliance and model feedback."
+          ]
+        }
+      },
+      {
+        "id": "customer-education",
+        "title": "Policy Education & Cross-sell",
+        "moengage": {
+          "steps": [
+            "Design educational Journeys explaining coverage, claims process and value-added services.",
+            "Segment customers by life events and recommend relevant add-ons or policies with contextual messaging.",
+            "Measure cross-sell conversion and use feedback to improve educational content."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Use Canvas to deliver educational sequences and recommend add-ons using Liquid personalization.",
+            "Stream cross-sell performance via Currents for product and marketing optimization."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "banking",
+    "name": "Banking",
+    "useCases": [
+      {
+        "id": "fraud-alerts-bank",
+        "title": "Fraud Alerts & Risk Notifications",
+        "moengage": {
+          "steps": [
+            "Detect suspicious transactions with defined signals and severity and trigger immediate alerts via SMS and push.",
+            "Provide secure verification flows and require additional authentication where appropriate.",
+            "Log confirmations and feed back to fraud models to reduce false positives."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Emit suspicious_activity events into Braze and create high-priority Canvas to notify users and ops.",
+            "Use REST Actions to call secure verification endpoints and stream confirmations via Currents for audit purposes."
+          ]
+        }
+      },
+      {
+        "id": "payment-recovery",
+        "title": "Failed Payment Recovery & Billing Notices",
+        "moengage": {
+          "steps": [
+            "Emit payment_failed events and create Journeys that notify users, provide remediation steps and allow secure re-payment.",
+            "Escalate failed payments for high-value accounts and track recovery rate and revenue impact."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Use Canvas to sequence failed payment notifications and include deep-links to secure payment pages.",
+            "Stream payment events via Currents for reconciliation and finance reporting."
+          ]
+        }
+      },
+      {
+        "id": "onboarding-bank",
+        "title": "Banking Onboarding & KYC",
+        "moengage": {
+          "steps": [
+            "Break onboarding into micro-steps and track each milestone while updating onboarding_progress attributes.",
+            "Trigger Journeys to nudge stalled users and provide assistance through secured channels and agent scheduling.",
+            "Persist audit logs for compliance and export onboarding timelines for regulatory review."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Emit onboarding events and update progress attributes in Braze for segmentation and Canvas triggers.",
+            "Use Canvas to nudge and escalate stalled high-value accounts and stream events via Currents for auditability."
+          ]
+        }
+      },
+      {
+        "id": "savings-nudges",
+        "title": "Savings Nudges & Behavioural Banking",
+        "moengage": {
+          "steps": [
+            "Segment users by income and spending patterns to identify saving opportunities and send personalized nudges.",
+            "Offer round-up or auto-save suggestions using secure deep-links that require server-side validation.",
+            "Measure sustained saving behavior and iterate on nudges for long-term adoption."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Create Canvas for savings nudges and track opt-ins and deposits via Currents for product analytics.",
+            "Use Liquid templating to personalize savings suggestions and export cohort performance."
+          ]
+        }
+      },
+      {
+        "id": "credit-monitoring",
+        "title": "Credit Monitoring & Alerts",
+        "moengage": {
+          "steps": [
+            "Emit credit_score_change and suspicious_account_activity events and notify users of important changes.",
+            "Provide guidance and steps to dispute or correct information and escalate complex cases to agents.",
+            "Track dispute resolutions and monitor user outcomes."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Use Canvas to notify users about credit events and include REST Actions to fetch up-to-date summaries.",
+            "Stream notifications and dispute outcomes via Currents for compliance and reporting."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "d2c",
+    "name": "D2C (Direct-to-Consumer)",
+    "useCases": [
+      {
+        "id": "launch-campaign",
+        "title": "Product Launch & Early Adopter Campaigns",
+        "moengage": {
+          "steps": [
+            "Segment customers by past purchase behavior and early-adopter signals and create targeted launch Journeys.",
+            "Use dynamic templates to show product benefits and pre-order CTAs and include scarcity counters when needed.",
+            "Measure conversion, retention of early adopters and iteratively refine launch messaging."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Use Canvas to orchestrate launch sequences and REST Actions for dynamic inventory or pricing at send-time.",
+            "Stream purchase and retention metrics via Currents for go-to-market analytics."
+          ]
+        }
+      },
+      {
+        "id": "subscriptions-d2c",
+        "title": "Subscription & Replenishment",
+        "moengage": {
+          "steps": [
+            "Track subscription_start, upcoming_renewal and replenishment_needed events and notify users accordingly.",
+            "Create Journeys that remind users before replenishment and offer easy modification or skip options.",
+            "Measure churn and replenishment adherence and test incentives for retention."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Use Canvas to send renewals and replenishment prompts and include one-click modification links.",
+            "Stream subscription events via Currents for retention modeling."
+          ]
+        }
+      },
+      {
+        "id": "ugc-marketing",
+        "title": "UGC Collection & Advocacy",
+        "moengage": {
+          "steps": [
+            "Prompt customers for photo or review submissions after delivery and incentivize submissions where legal.",
+            "Route high-quality UGC to marketing via webhooks and use Journeys to showcase top content.",
+            "Measure uplift from UGC in paid and organic channels."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Use Canvas to request UGC and handle responses via webhooks to content management systems.",
+            "Stream UGC submission events via Currents and measure downstream performance."
+          ]
+        }
+      },
+      {
+        "id": "loyalty-d2c",
+        "title": "D2C Loyalty & VIP Programs",
+        "moengage": {
+          "steps": [
+            "Design loyalty tiers and benefits and sync member status between backend and MoEngage attributes.",
+            "Create Journeys for onboarding, tier-up notifications and exclusive offers for VIPs.",
+            "Analyze member retention and LTV uplift with cohort analysis."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Use Canvas to manage loyalty lifecycle and stream member events to Currents for LTV calculations.",
+            "Test offers and perks using Canvas variants and measure incremental sales."
+          ]
+        }
+      },
+      {
+        "id": "refer-d2c",
+        "title": "Refer-a-Friend & Viral Growth",
+        "moengage": {
+          "steps": [
+            "Implement unique referral links or codes and track invite and conversion events.",
+            "Trigger referral reward Journeys on successful referrals and reconcile rewards server-side.",
+            "Measure viral lift and cost per acquisition from referral channels."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Use Canvas to encourage referrals at high-engagement moments and use REST Actions to validate conversions and award rewards.",
+            "Stream referral conversions via Currents for acquisition reporting."
+          ]
+        }
+      },
+      {
+        "id": "subscription-optimization",
+        "title": "Subscription Pricing & Retention Testing",
+        "moengage": {
+          "steps": [
+            "Segment subscribers by usage and churn risk and run Journey variants to test pricing and incentive structures.",
+            "Analyze cohort behaviour post-intervention and iterate on pricing tiers and benefits."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Run Canvas A/B tests for pricing messages and use Currents exports to determine optimal pricing for retention and revenue."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "homeservices",
+    "name": "Home Services (Plumbing, Cleaning, Repairs)",
+    "useCases": [
+      {
+        "id": "booking-flow",
+        "title": "Booking & Scheduling",
+        "moengage": {
+          "steps": [
+            "Emit booking_requested, booking_confirmed and booking_reminder events and include technician and slot details.",
+            "Trigger reminder Journeys prior to appointment with confirm/cancel options and allow rescheduling via webhooks.",
+            "Track attendance and missed appointments and implement follow-up Journeys for no-shows."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Use Canvas to send booking confirmations and reminders and include calendar integration via REST Actions.",
+            "Stream booking outcomes to Currents for operational metrics and workforce planning."
+          ]
+        }
+      },
+      {
+        "id": "technician-feedback",
+        "title": "Technician Feedback & Ratings",
+        "moengage": {
+          "steps": [
+            "Send ratings request after service completion and capture feedback and photos if relevant.",
+            "Route low ratings to ops via webhook for remediation and high ratings to marketing for testimonials.",
+            "Use aggregated feedback to improve technician training and service quality."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Schedule post-service feedback Canvas and capture responses via webhooks as Braze events.",
+            "Use Canvas branches to escalate low feedback and surface high ratings for promotional use."
+          ]
+        }
+      },
+      {
+        "id": "rebooking",
+        "title": "Rebooking & Subscription Services",
+        "moengage": {
+          "steps": [
+            "Offer subscription-based plans for recurring cleanings or maintenance and notify customers before next scheduled service.",
+            "Allow easy skip or reschedule options through messages and track changes via events.",
+            "Measure subscription retention and lifetime value to optimize plans."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Use Canvas to manage subscription reminders and allow one-click rescheduling via secure deep-links.",
+            "Stream subscription metrics via Currents for retention modeling."
+          ]
+        }
+      },
+      {
+        "id": "service-uptime",
+        "title": "Technician Availability & ETA Notifications",
+        "moengage": {
+          "steps": [
+            "Emit technician_assigned and technician_eta events and notify customers of estimated arrival times and delays.",
+            "Update ETAs in real-time through Journeys or in-app messages and provide options to contact if delayed.",
+            "Log ETA changes and measure arrival punctuality for operations improvement."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Use Canvas to send assignment and ETA updates and include webhooks for real-time ETA adjustments.",
+            "Stream ETA and punctuality data via Currents for workforce optimization."
+          ]
+        }
+      },
+      {
+        "id": "safety-protocols",
+        "title": "Safety Protocols & Job Confirmations",
+        "moengage": {
+          "steps": [
+            "Send pre-arrival safety protocols and confirmation steps to customers and technicians and collect digital acknowledgements.",
+            "Include checklists or photo evidence post-service and store them for dispute resolution.",
+            "Trigger escalation Journeys if acknowledgements are missing for safety-critical jobs."
+          ]
+        },
+        "braze": {
+          "steps": [
+            "Create Canvas to distribute safety protocols and capture confirmations via Content Cards or webhooks.",
+            "Stream confirmations and post-job evidence via Currents for compliance and dispute handling."
+          ]
+        }
+      }
+    ]
+  }
+]
